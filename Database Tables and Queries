@@ -1,0 +1,164 @@
+
+
+-- Create customer table
+CREATE TABLE customer (
+    cust_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    city VARCHAR(50),
+    phone VARCHAR(20)
+);
+
+-- Create product table
+CREATE TABLE product (
+    product_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    price FLOAT,
+    category VARCHAR(50)
+);
+
+-- Create supplier table
+CREATE TABLE supplier (
+    supplier_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    city VARCHAR(50)
+);
+
+-- Create orders table
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    cust_id INT,
+    product_id INT,
+    quantity INT,
+    order_date DATE,
+    FOREIGN KEY (cust_id) REFERENCES customer(cust_id),
+    FOREIGN KEY (product_id) REFERENCES product(product_id)
+);
+
+-- Create product_supplier table
+CREATE TABLE product_supplier (
+    product_id INT,
+    supplier_id INT,
+    FOREIGN KEY (product_id) REFERENCES product(product_id),
+    FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id)
+);
+
+-- Insert data into customer
+INSERT INTO customer VALUES 
+(1, 'Ali', 'Lahore', '03001234567'),
+(2, 'Sara', 'Karachi', '03009876543'),
+(3, 'Zain', 'Lahore', '03211234567'),
+(4, 'Ayesha', 'Islamabad', '03123456789');
+
+-- Insert data into product
+INSERT INTO product VALUES 
+(101, 'Laptop', 80000, 'Electronics'),
+(102, 'Mobile', 50000, 'Electronics'),
+(103, 'Table', 12000, 'Furniture'),
+(104, 'Chair', 6000, 'Furniture'),
+(105, 'Headphones', 3000, 'Electronics');
+
+-- Insert data into supplier
+INSERT INTO supplier VALUES 
+(301, 'TechWorld', 'Lahore'),
+(302, 'HomeStyle', 'Karachi'),
+(303, 'SoundHub', 'Islamabad'),
+(304, 'MegaStore', 'Lahore');
+
+-- Insert data into orders
+INSERT INTO orders VALUES 
+(201, 1, 101, 1, '2025-07-01'),
+(202, 1, 102, 2, '2025-07-02'),
+(203, 2, 103, 1, '2025-07-03'),
+(204, 3, 101, 1, '2025-07-04'),
+(205, 4, 105, 3, '2025-07-05');
+
+-- Insert data into product_supplier
+INSERT INTO product_supplier VALUES 
+(101, 301),
+(102, 301),
+(103, 302),
+(104, 302),
+(105, 303);
+
+
+select*from customer
+select*from product
+select*from supplier
+select*from orders
+select*from product_supplier
+
+--1  List all customer names with the names of products they ordered.
+
+ select c.name,p.name from customer c
+join orders o on c.cust_id =o.cust_id
+join product p on p.product_id =o.product_id
+
+--2 Display order ID, customer name, and product name for all orders.
+
+select   o.order_id, c.name ,p.name  from orders o
+JOIN customer c ON o.cust_id = c.cust_id
+JOIN product p ON o.product_id = p.product_id;
+
+--3.Show products along with the names of suppliers who supply them.
+
+SELECT p.name AS product_name, s.name AS supplier_name
+FROM product p
+JOIN product_supplier ps ON p.product_id = ps.product_id
+JOIN supplier s ON ps.supplier_id = s.supplier_id;
+
+--4.List all products that have never been ordered.
+
+SELECT p.name AS product_name
+FROM product p
+WHERE p.product_id NOT IN (
+    SELECT product_id 
+    FROM orders)
+
+--5.Find customers who placed orders for products in the category 'Electronics'.
+
+select c.name  from customer c
+join orders o on c.cust_id=o.cust_id
+join product p on p.product_id =o.product_id
+where p.category='Electronics'
+
+--6.Display each customer along with the total quantity of products they have ordered.
+
+
+SELECT c.name AS customer_name, SUM(o.quantity) AS total_quantity_ordered
+FROM customer c
+JOIN orders o ON c.cust_id = o.cust_id
+GROUP BY c.name;
+
+--7.List product names and the number of times each has been ordered.
+SELECT p.name AS product_name, COUNT(o.order_id) AS times_ordered
+FROM product p
+LEFT JOIN orders o ON p.product_id = o.product_id
+GROUP BY p.name;
+
+ --8.Display supplier names who supply products that have been ordered at least once.
+
+SELECT DISTINCT s.name AS supplier_name
+FROM supplier s
+JOIN product_supplier ps ON s.supplier_id = ps.supplier_id
+JOIN orders o ON ps.product_id = o.product_id;
+
+ 
+ --9.Show all customers who ordered a product supplied by a supplier in the same city.
+
+SELECT DISTINCT c.name AS customer_name, c.city AS customer_city, s.name AS supplier_name, s.city AS supplier_city
+FROM customer c
+JOIN orders o ON c.cust_id = o.cust_id
+JOIN product_supplier ps ON o.product_id = ps.product_id
+JOIN supplier s ON ps.supplier_id = s.supplier_id
+WHERE c.city = s.city;
+
+--10.List all suppliers who do not supply any product.
+
+SELECT s.name AS supplier_name
+FROM supplier s
+LEFT JOIN product_supplier ps ON s.supplier_id = ps.supplier_id
+WHERE ps.product_id IS NULL;
+
+
+table name bscs2
+
